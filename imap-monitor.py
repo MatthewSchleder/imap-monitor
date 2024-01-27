@@ -23,7 +23,7 @@ def check_for_new_email(mail, sender_email):
 def send_email(username, password, recipient, subject, body):
     server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
     server.login(username, password)
-    message = f"Subject: {subject}\n\n{body}"
+    message = f"To: {recipient}\nSubject: {subject}\n\n{body}"
     server.sendmail(username, recipient, message)
     server.quit()
 
@@ -34,13 +34,14 @@ def main():
     PASSWORD = os.environ["APP_PASSWORD"]
     SENDER_EMAIL = os.environ["SENDER_EMAIL"]
     POLL_TIME = 1  # Number of seconds to check email
-    POLL_LOGGING_MESSAGE = 120  # Number of iterations before writing to console
-    RESPONSE_SUBJECT = "I love you Allie"
-    RESPONSE_BODY = """Hi there,
+    POLL_LOGGING_MESSAGE = 120  # Number of iterations before writing to console, there is slightly more time than just the poll, due to searching for the email
+    RESPONSE_SUBJECT = "Email Subject"
+    RESPONSE_BODY = """\
+Hi there!
 
-Thanks for being my kisses.
+This is the response email body
 
-Love,
+Best,
 Matt
 """
 
