@@ -54,7 +54,7 @@ Matt
         mail.login(USERNAME, PASSWORD)
         poll_count = 0
         print(
-            f"Monitoring {USERNAME} emails that are sent from {SENDER_EMAIL}, checking every {POLL_TIME} seconds. you will receive updates every {POLL_TIME * POLL_LOGGING_MESSAGE} seconds"
+            f"Monitoring {USERNAME} emails that are sent from {SENDER_EMAIL}, checking every {POLL_TIME} seconds. you will receive updates about every {POLL_TIME * POLL_LOGGING_MESSAGE} seconds"
         )
 
         while True:
