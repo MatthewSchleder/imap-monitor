@@ -6,16 +6,26 @@ from dotenv import load_dotenv
 import os
 
 
-def check_for_new_email(mail, sender_email):
+def login(USERNAME, PASSWORD, IMAP_SERVER):
+    mail = imaplib.IMAP4_SSL(IMAP_SERVER)
+    mail.login(USERNAME,PASSWORD)
     mail.select("inbox")
-    status, data = mail.search(None, '(UNSEEN FROM "{}")'.format(sender_email))
-    mail_ids = []
-    for block in data:
-        mail_ids += block.split()
+    return mail
 
-    # Mark emails as read
-    for e_id in mail_ids:
-        mail.store(e_id, "+FLAGS", "\\Seen")
+
+def check_for_new_email(mail, sender_email):
+    try:
+        mail.select("inbox")
+        status, data = mail.search(None, '(UNSEEN FROM "{}")'.format(sender_email))
+        mail_ids = []
+        for block in data:
+            mail_ids += block.split()
+
+        # Mark emails as read
+        for e_id in mail_ids:
+            mail.store(e_id, "+FLAGS", "\\Seen")
+    except Exception as e:
+        print(e)
 
     return len(mail_ids) > 0
 
@@ -32,44 +42,43 @@ def main():
     load_dotenv()
     USERNAME = os.environ["YOUR_EMAIL"]
     PASSWORD = os.environ["APP_PASSWORD"]
-    SENDER_EMAIL = os.environ["SENDER_EMAIL"]
-    POLL_TIME = 1  # Number of seconds to check email
-    POLL_LOGGING_MESSAGE = 120  # Number of iterations before writing to console, there is slightly more time than just the poll, due to searching for the email
-    RESPONSE_SUBJECT = "Email Subject"
+    SEARCH_FRAGMENT = os.environ["SENDER_SEARCH_FRAGMENT"]
+    FINAL_RECIPIENT = os.environ["FINAL_RECIPIENT"]
+    POLL_TIME = 0.5  # Number of seconds to check email
+    POLL_LOGGING_MESSAGE = 1200  # Number of iterations before writing to console, there is slightly more time than just the poll, due to searching for the email
+    RESPONSE_SUBJECT = "This is the subject"
     RESPONSE_BODY = """\
-Hi there!
+Hi there,
 
-This is the response email body
+This is the email body
 
-Best,
-Matt
+Thank you so much,
+Your Name
 """
-
-    # Create IMAP connection
-    mail = imaplib.IMAP4_SSL("imap.gmail.com")
-    mail.login(USERNAME, PASSWORD)
-
     try:
-        mail = imaplib.IMAP4_SSL("imap.gmail.com")
-        mail.login(USERNAME, PASSWORD)
+        mail = login(USERNAME, PASSWORD, "imap.gmail.com")
         poll_count = 0
         print(
-            f"Monitoring {USERNAME} emails that are sent from {SENDER_EMAIL}, checking every {POLL_TIME} seconds. you will receive updates about every {POLL_TIME * POLL_LOGGING_MESSAGE} seconds"
+            f"Monitoring {USERNAME} emails that are sent from {SEARCH_FRAGMENT}, checking every {POLL_TIME} seconds. you will receive updates about every {POLL_TIME * POLL_LOGGING_MESSAGE} seconds"
         )
 
         while True:
             poll_count = poll_count + 1
-            if check_for_new_email(mail, SENDER_EMAIL):
+            if check_for_new_email(mail, SEARCH_FRAGMENT):
+                print(
+                    f"Email from {SEARCH_FRAGMENT} found at {datetime.now().strftime('%b %d, %Y %H:%M:%S.%f')}!"
+                )
                 send_email(
                     USERNAME,
                     PASSWORD,
-                    SENDER_EMAIL,
+                    FINAL_RECIPIENT,
                     RESPONSE_SUBJECT,
                     RESPONSE_BODY,
                 )
                 print(
-                    f"Email from {SENDER_EMAIL} found! Sent response email to {SENDER_EMAIL} at {datetime.now().strftime('%b %d, %Y %H:%M:%S.%f')}."
+                    f"Sent response email to {FINAL_RECIPIENT} at {datetime.now().strftime('%b %d, %Y %H:%M:%S.%f')}."
                 )
+                exit(0)
             elif poll_count >= POLL_LOGGING_MESSAGE:
                 poll_count = 0
                 print(
@@ -80,6 +89,9 @@ Matt
 
     except KeyboardInterrupt:
         print("Program interrupted by user. Logging out.")
+    except Exception as e:
+        print('Logging in again')
+        main()
     finally:
         mail.logout()
 
