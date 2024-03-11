@@ -4,6 +4,7 @@ import time
 import smtplib
 from dotenv import load_dotenv
 import os
+import simpleaudio as sa
 
 
 def login(USERNAME, PASSWORD, IMAP_SERVER):
@@ -46,14 +47,14 @@ def main():
     FINAL_RECIPIENT = os.environ["FINAL_RECIPIENT"]
     POLL_TIME = 0.5  # Number of seconds to check email
     POLL_LOGGING_MESSAGE = 1200  # Number of iterations before writing to console, there is slightly more time than just the poll, due to searching for the email
-    RESPONSE_SUBJECT = "This is the subject"
+    RESPONSE_SUBJECT = "Email Subject"
     RESPONSE_BODY = """\
 Hi there,
 
-This is the email body
+This is the body of the email!
 
-Thank you so much,
-Your Name
+Thanks,
+Matt
 """
     try:
         mail = login(USERNAME, PASSWORD, "imap.gmail.com")
@@ -78,6 +79,9 @@ Your Name
                 print(
                     f"Sent response email to {FINAL_RECIPIENT} at {datetime.now().strftime('%b %d, %Y %H:%M:%S.%f')}."
                 )
+                alert_sound = sa.WaveObject.from_wave_file("audio/email-sent.wav")
+                play_obj = alert_sound.play()
+                play_obj.wait_done()
                 exit(0)
             elif poll_count >= POLL_LOGGING_MESSAGE:
                 poll_count = 0
