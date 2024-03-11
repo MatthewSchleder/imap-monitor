@@ -12,6 +12,8 @@ We want to build a house! Here is the process that we will be going through just
 
 We were told by the sales agent that people would take off work and refresh their emails all day, knowing that the email will be received some time through that day. Why would we click the refresh button all day when we have the power of python!
 
+Edit: The bot worked, we were the first of 76 people. Cheers!
+
 ### Getting started
 
 This repo assumes you are using gmail to receive and send emails.
